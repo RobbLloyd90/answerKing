@@ -46,10 +46,7 @@ def handle_getAllItems():
             'body': json.dumps(results)
         }
 
-handle_getAllItems()
-
 def lambda_handler(event, context):
         logger.info("Getting all items")
-
         return handle_getAllItems()    
 
