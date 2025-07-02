@@ -30,7 +30,7 @@ Parameters:
     NoEcho: true
   DBHOST:
     Type: String
-    Default: psql-db.ce5zstiyqlhf.eu-west-2.rds.amazonaws.com
+    Default: answerking.ce5zstiyqlhf.eu-west-2.rds.amazonaws.com
     NoEcho: true
   DBPORT:
     Type: String
@@ -195,7 +195,7 @@ Resources:
           DB_PASSWORD: !Ref DBPASSWORD 
           DB_NAME: !Ref DBNAME
           DB_USER: !Ref DBUSER
-          DB_HOST: !Ref DBHOST
+          DB_HOST: !GetAtt AnswerKingDB.Endpoint.Address
           DB_PORT: !Ref DBPORT
       Runtime: python3.13
       VpcConfig:

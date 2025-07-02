@@ -3,7 +3,6 @@ import json
 import psycopg2
 from psycopg2 import Error
 import logging
-import boto3
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
@@ -163,37 +162,21 @@ createStaffTableQuery = "CREATE TABLE staff_table(staff_id SERIAL PRIMARY KEY, f
 createItemTableQuery = "CREATE TABLE items_table(item_id SERIAL PRIMARY KEY, name VARCHAR(100) NOT NULL, price DOUBLE PRECISION NOT NULL, description TEXT, kcals DOUBLE PRECISION, fat DOUBLE PRECISION, carbs DOUBLE PRECISION, sugar DOUBLE PRECISION, fiber DOUBLE PRECISION, salt DOUBLE PRECISION, isActive BOOL)"
 createCategoryTableQuery = "CREATE TABLE category_table(category_id SERIAL PRIMARY KEY, name VARCHAR(100))"
 
-# def get_db_sInfo(data):
-#     client = boto3.client('secretsmanager')
-#     response = client.get_secret_value(SecretId=data)
-#     secret_string = response['SecretString']
-#     secrets = json.loads(secret_string)
-#     return secrets
-
-# SECRET_NAME = 'db-credentials'
-
-# db_secrets = get_db_sInfo(SECRET_NAME)
 
 # Make db connection
 def handle_dbInit():
     connection = None
     cursor = None
     try:
+        # Lets start a try
         logger.info("Connecting to the database")
+        print(os.getenv("DB_HOST"))
         connection = psycopg2.connect(
             database=os.getenv("DB_NAME"),
             user=os.getenv("DB_USER"),
             host=os.getenv("DB_HOST"),
             password=os.getenv("DB_PASSWORD"),
             port=os.getenv("DB_PORT"))
-
-        # connection = psycopg2.connect(
-        #     database = db_secrets['database'],
-        #     user=db_secrets['username'],
-        #     password=db_secrets('password'),
-        #     host=db_secrets['host'],
-        #     port=int(db_secrets['port'])
-        # )
         
     #Cursor helps to perform database operations
         logger.info("Connection established")
