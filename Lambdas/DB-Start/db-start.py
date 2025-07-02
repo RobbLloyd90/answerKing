@@ -7,6 +7,8 @@ import logging
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
+# SAMPLE DATA
+
 json_data = [
   {
     "name": "Filter Coffee",
