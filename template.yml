@@ -209,6 +209,33 @@ Resources:
             Method: GET
     Metadata:
       SamResourceId: ItemsFunction
+  RemoveItemFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: Lambdas/Remove-Item
+      Handler: removeItem_lambda.lambda_handler
+      Environment:
+        Variables:
+          DB_PASSWORD: !Ref DBPASSWORD 
+          DB_NAME: !Ref DBNAME
+          DB_USER: !Ref DBUSER
+          DB_HOST: !GetAtt AnswerKingDB.Endpoint.Address
+          DB_PORT: !Ref DBPORT
+      Runtime: python3.13
+      VpcConfig:
+        SecurityGroupIds: 
+          - !Ref LambdaSecurityGroup
+        SubnetIds: 
+          - !Ref Subnet1
+          - !Ref Subnet2
+      Events:
+        AnswerKing:
+          Type: Api
+          Properties:
+            Path: /removeitem/{id}
+            Method: DELETE
+    Metadata:
+      SamResourceId: RemoveItemFunction
 
 Outputs:
   VPC:
@@ -225,12 +252,17 @@ Outputs:
 
   HomeFunctionArn:
     Description: ARN of the Home Lambda function
-    Value: !GetAtt [ HomeFunction, 
+    Value: !GetAtt [ HomeFunction, Arn ]
 
-  StartDBFunction:
+  StartDBFunctionArn:
     Description: ARN of the StartDB Lambda function
     Value: !GetAtt [ StartDBFunction, Arn ]
 
-      ItemsFunctionArn:
+  ItemsFunctionArn:
     Description: ARN of the Items Lambda function
     Value: !GetAtt [ ItemsFunction, Arn ]
+
+  RemoveItemFunctionArn:
+    Description: ARN of the Items Lambda function
+    Value: !GetAtt [ RemoveItemFunction, Arn ]
+    
