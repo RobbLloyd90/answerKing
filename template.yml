@@ -142,34 +142,6 @@ Resources:
           "port": "${DBPORT}"
         }
 
-  ItemsFunction:
-    Type: AWS::Serverless::Function
-    Properties:
-      CodeUri: Lambdas/All-Items
-      Handler: selectAllItems_lambda.lambda_handler
-      Environment:
-        Variables:
-          DB_PASSWORD: !Ref DBPASSWORD 
-          DB_NAME: !Ref DBNAME
-          DB_USER: !Ref DBUSER
-          DB_HOST: !GetAtt AnswerKingDB.Endpoint.Address
-          DB_PORT: !Ref DBPORT
-      Runtime: python3.13
-      VpcConfig:
-        SecurityGroupIds: 
-          - !Ref LambdaSecurityGroup
-        SubnetIds: 
-          - !Ref Subnet1
-          - !Ref Subnet2
-      Events:
-        AnswerKing:
-          Type: Api
-          Properties:
-            Path: /all-items
-            Method: GET
-    Metadata:
-      SamResourceId: ItemsFunction
-
   HomeFunction:
     Type: AWS::Serverless::Function
     Properties:
@@ -225,10 +197,6 @@ Outputs:
   ApiUrl:
     Description: API Gateway endpoint Url
     Value: !Sub https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/prod/all-items
-
-  ItemsFunctionArn:
-    Description: ARN of the Items Lambda function
-    Value: !GetAtt [ ItemsFunction, Arn ]
 
   HomeFunctionArn:
     Description: ARN of the Home Lambda function
