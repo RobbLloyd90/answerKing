@@ -141,7 +141,6 @@ Resources:
           "host": "${DBHOST}",
           "port": "${DBPORT}"
         }
-
   HomeFunction:
     Type: AWS::Serverless::Function
     Properties:
@@ -156,7 +155,6 @@ Resources:
             Method: GET
     Metadata:
       SamResourceId: HomeFunction
-
   StartDBFunction:
     Type: AWS::Serverless::Function
     Properties:
@@ -184,6 +182,33 @@ Resources:
             Method: POST
     Metadata:
       SamResourceId: StartDBFunction
+  ItemsFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: Lambdas/All-Items
+      Handler: selectAllItems_lambda.lambda_handler
+      Environment:
+        Variables:
+          DB_PASSWORD: !Ref DBPASSWORD 
+          DB_NAME: !Ref DBNAME
+          DB_USER: !Ref DBUSER
+          DB_HOST: !GetAtt AnswerKingDB.Endpoint.Address
+          DB_PORT: !Ref DBPORT
+      Runtime: python3.13
+      VpcConfig:
+        SecurityGroupIds: 
+          - !Ref LambdaSecurityGroup
+        SubnetIds: 
+          - !Ref Subnet1
+          - !Ref Subnet2
+      Events:
+        AnswerKing:
+          Type: Api
+          Properties:
+            Path: /all-items
+            Method: GET
+    Metadata:
+      SamResourceId: ItemsFunction
 
 Outputs:
   VPC:
@@ -200,8 +225,12 @@ Outputs:
 
   HomeFunctionArn:
     Description: ARN of the Home Lambda function
-    Value: !GetAtt [ HomeFunction, Arn ]
+    Value: !GetAtt [ HomeFunction, 
 
   StartDBFunction:
     Description: ARN of the StartDB Lambda function
     Value: !GetAtt [ StartDBFunction, Arn ]
+
+      ItemsFunctionArn:
+    Description: ARN of the Items Lambda function
+    Value: !GetAtt [ ItemsFunction, Arn ]
