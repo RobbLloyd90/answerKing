@@ -3,7 +3,6 @@ import json
 import psycopg2
 from psycopg2 import Error
 import logging
-import boto3
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
@@ -162,6 +161,7 @@ createOrderTableQuery = "CREATE TABLE order_table(order_id SERIAL PRIMARY KEY, c
 createStaffTableQuery = "CREATE TABLE staff_table(staff_id SERIAL PRIMARY KEY, first_name VARCHAR(100) NOT NULL, surname_name VARCHAR(200) NOT NULL, staff_number INT NOT NULL UNIQUE, store_location VARCHAR(200), email_address VARCHAR(500))"
 createItemTableQuery = "CREATE TABLE items_table(item_id SERIAL PRIMARY KEY, name VARCHAR(100) NOT NULL, price DOUBLE PRECISION NOT NULL, description TEXT, kcals DOUBLE PRECISION, fat DOUBLE PRECISION, carbs DOUBLE PRECISION, sugar DOUBLE PRECISION, fiber DOUBLE PRECISION, salt DOUBLE PRECISION, isActive BOOL)"
 createCategoryTableQuery = "CREATE TABLE category_table(category_id SERIAL PRIMARY KEY, name VARCHAR(100))"
+
 
 # Make db connection
 def handle_dbInit():
