@@ -164,12 +164,15 @@ createStaffTableQuery = "CREATE TABLE staff_table(staff_id SERIAL PRIMARY KEY, f
 createItemTableQuery = "CREATE TABLE items_table(item_id SERIAL PRIMARY KEY, name VARCHAR(100) NOT NULL, price DOUBLE PRECISION NOT NULL, description TEXT, kcals DOUBLE PRECISION, fat DOUBLE PRECISION, carbs DOUBLE PRECISION, sugar DOUBLE PRECISION, fiber DOUBLE PRECISION, salt DOUBLE PRECISION, isActive BOOL)"
 createCategoryTableQuery = "CREATE TABLE category_table(category_id SERIAL PRIMARY KEY, name VARCHAR(100))"
 
+
 # Make db connection
 def handle_dbInit():
     connection = None
     cursor = None
     try:
+        # Lets start a try
         logger.info("Connecting to the database")
+        print(os.getenv("DB_HOST"))
         connection = psycopg2.connect(
             database=os.getenv("DB_NAME"),
             user=os.getenv("DB_USER"),
