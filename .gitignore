@@ -1,0 +1,25 @@
+### ENV ###
+.env
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak
+myenv
+ak-env/
+
+### SAM ###
+# Ignore build directories for the AWS Serverless Application Model (SAM)
+# Info: https://aws.amazon.com/serverless/sam/
+# Docs: https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/serverless-sam-reference.html
+
+**/.aws-sam
+sam-installation
+aws-sam-cli-linux-x86_64.zip
+
+### TEMP FILES ###
+
+template.txt
+template-1-7-25.txt

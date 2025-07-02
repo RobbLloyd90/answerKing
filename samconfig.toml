@@ -1,0 +1,12 @@
+version = 0.1
+
+[default.deploy.parameters]
+stack_name = "answerKingStack"
+resolve_s3 = true
+s3_prefix = "answerKingStack"
+region = "eu-west-2"
+confirm_changeset = true
+capabilities = "CAPABILITY_IAM"
+disable_rollback = true
+image_repositories = []
+parameter_overrides = "VpcCIDR=\"10.10.10.0/20\" Subnet1CIDR=\"10.10.10.0/24\" Subnet2CIDR=\"10.10.11.0/24\" DeployedByTag=\"Robb\""

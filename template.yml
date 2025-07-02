@@ -1,0 +1,239 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: Answer-King
+
+Parameters:
+  VpcCIDR:
+    Description: please enter the IP range (CIDR notation) for this VPC
+    Type: String
+    Default: 10.10.10.0/20
+    MinLength: 9
+    MaxLength: 18
+    AllowedPattern: ^([0-9]{1,3}\.){3}[0-9]{1,3}\/([0-9]|[1-2][0-9]|3[0-2])$
+    ConstraintDescription: Must be a valid IP CIDR range of the form x.x.x/x.
+  Subnet1CIDR:
+    Description: CIDR block for Subnet 1
+    Type: String
+    Default: 10.10.10.0/24
+  Subnet2CIDR:
+    Description: CIDR block for Subnet 2
+    Type: String
+    Default: 10.10.11.0/24
+  DBNAME:
+    Type: String
+    NoEcho: true
+  DBPASSWORD:
+    Type: String
+    NoEcho: true
+  DBUSER:
+    Type: String
+    NoEcho: true
+  DBHOST:
+    Type: String
+    Default: psql-db.ce5zstiyqlhf.eu-west-2.rds.amazonaws.com
+    NoEcho: true
+  DBPORT:
+    Type: String
+    Default: 5432
+    NoEcho: true
+  DeployedByTag:
+    Description: Value for the 'deployed-by' tag on each Resource
+    Type: String
+    Default: Robb
+
+Resources:
+  VPC:
+    Type: AWS::EC2::VPC
+    Properties:
+      CidrBlock: !Ref VpcCIDR
+      EnableDnsHostnames: true
+      EnableDnsSupport: true
+      Tags:
+        - Key: Name
+          Value: VPC
+        - Key: managed-by
+          Value: CloudFormation
+        - Key: deployed-by
+          Value: !Ref DeployedByTag
+
+  Subnet1:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref VPC
+      AvailabilityZone: !Select [0, !GetAZs '']
+      CidrBlock: !Ref Subnet1CIDR
+      MapPublicIpOnLaunch: true
+      Tags:
+        - Key: managed-by
+          Value: CloudFormation
+        - Key: deployed-by
+          Value: !Ref DeployedByTag
+
+  Subnet2:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref VPC
+      AvailabilityZone: eu-west-2b
+      CidrBlock: !Ref Subnet2CIDR
+      MapPublicIpOnLaunch: true
+      Tags:
+        - Key: managed-by
+          Value: CloudFormation
+        - Key: deployed-by
+          Value: !Ref DeployedByTag
+
+  LambdaSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Security for lambda_handler
+      VpcId: !Ref VPC
+      SecurityGroupEgress:
+        - IpProtocol: "-1"
+          CidrIp: 0.0.0.0/0
+          
+  AKDBSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Security group for RDS instance
+      VpcId: !Ref VPC
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 5432
+          ToPort: 5432
+          SourceSecurityGroupId: !Ref LambdaSecurityGroup 
+
+  AKDBSubnetGroup:
+    Type: AWS::RDS::DBSubnetGroup
+    Properties:
+      DBSubnetGroupDescription: "Subnet Group for RDS"
+      SubnetIds:
+        - !Ref Subnet1
+        - !Ref Subnet2
+
+  AnswerKingDB:
+    Type: AWS::RDS::DBInstance
+    Properties:
+      DBInstanceIdentifier: answerking
+      DBName: answerking
+      AllocatedStorage: 20 #20gb
+      DBInstanceClass: db.t3.micro
+      Engine: postgres
+      #EngineVersion: "17.5" try other versions
+      MasterUsername: !Ref DBUSER
+      MasterUserPassword: !Ref DBPASSWORD
+      VPCSecurityGroups:
+        - !Ref AKDBSecurityGroup
+      DBSubnetGroupName: !Ref AKDBSubnetGroup
+      PubliclyAccessible: false
+      MultiAZ: false
+      StorageType: gp3
+
+  Secrets:
+    Type: AWS::SecretsManager::Secret
+    Properties:
+      Name: db-credentials
+      Description: "Secret Info"
+      SecretString: !Sub |
+        {
+          "database": "${DBNAME}", 
+          "username": "${DBUSER}",
+          "password": "${DBPASSWORD}",
+          "host": "${DBHOST}",
+          "port": "${DBPORT}"
+        }
+
+  ItemsFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: Lambdas/All-Items
+      Handler: selectAllItems_lambda.lambda_handler
+      Environment:
+        Variables:
+          DB_PASSWORD: !Ref DBPASSWORD 
+          DB_NAME: !Ref DBNAME
+          DB_USER: !Ref DBUSER
+          DB_HOST: !GetAtt AnswerKingDB.Endpoint.Address
+          DB_PORT: !Ref DBPORT
+      Runtime: python3.13
+      VpcConfig:
+        SecurityGroupIds: 
+          - !Ref LambdaSecurityGroup
+        SubnetIds: 
+          - !Ref Subnet1
+          - !Ref Subnet2
+      Events:
+        AnswerKing:
+          Type: Api
+          Properties:
+            Path: /all-items
+            Method: GET
+    Metadata:
+      SamResourceId: ItemsFunction
+
+  HomeFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: Lambdas/Home
+      Handler: home.lambda_handler
+      Runtime: python3.13
+      Events:
+        AnswerKing:
+          Type: Api
+          Properties:
+            Path: /home
+            Method: GET
+    Metadata:
+      SamResourceId: HomeFunction
+
+  StartDBFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: Lambdas/DB-Start
+      Handler: db-start.lambda_handler
+      Environment:
+        Variables:
+          DB_PASSWORD: !Ref DBPASSWORD 
+          DB_NAME: !Ref DBNAME
+          DB_USER: !Ref DBUSER
+          DB_HOST: !Ref DBHOST
+          DB_PORT: !Ref DBPORT
+      Runtime: python3.13
+      VpcConfig:
+        SecurityGroupIds: 
+          - !Ref LambdaSecurityGroup
+        SubnetIds: 
+          - !Ref Subnet1
+          - !Ref Subnet2
+      Events:
+        AnswerKing:
+          Type: Api
+          Properties:
+            Path: /pleaseonlydothisonce
+            Method: POST
+    Metadata:
+      SamResourceId: StartDBFunction
+
+Outputs:
+  VPC:
+    Description: A reference to the created VPC
+    Value: !Ref VPC
+
+  SubnetIDs:
+    Description: Comma-separated list of subnet IDs
+    Value: !Join [ ',', [ !Ref Subnet1, !Ref Subnet2 ] ]
+
+  ApiUrl:
+    Description: API Gateway endpoint Url
+    Value: !Sub https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/prod/all-items
+
+  ItemsFunctionArn:
+    Description: ARN of the Items Lambda function
+    Value: !GetAtt [ ItemsFunction, Arn ]
+
+  HomeFunctionArn:
+    Description: ARN of the Home Lambda function
+    Value: !GetAtt [ HomeFunction, Arn ]
+
+  StartDBFunction:
+    Description: ARN of the StartDB Lambda function
+    Value: !GetAtt [ StartDBFunction, Arn ]
