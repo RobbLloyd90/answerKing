@@ -262,10 +262,36 @@ Resources:
           Properties:
             Path: /item
             Method: POST
-            
     Metadata:
       SamResourceId: CreateItemFunction
 
+  ModifyItemFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: Lambdas/Mod-Item
+      Handler: modItem_lambda.lambda_handler
+      Environment:
+        Variables:
+          DB_PASSWORD: !Ref DBPASSWORD 
+          DB_NAME: !Ref DBNAME
+          DB_USER: !Ref DBUSER
+          DB_HOST: !GetAtt AnswerKingDB.Endpoint.Address
+          DB_PORT: !Ref DBPORT
+      Runtime: python3.13
+      VpcConfig:
+        SecurityGroupIds: 
+          - !Ref LambdaSecurityGroup
+        SubnetIds: 
+          - !Ref Subnet1
+          - !Ref Subnet2
+      Events:
+        AnswerKing:
+          Type: Api
+          Properties:
+            Path: /item/{id}
+            Method: POST    
+    Metadata:
+      SamResourceId: ModifyItemFunction
 Outputs:
   VPC:
     Description: A reference to the created VPC
@@ -298,4 +324,8 @@ Outputs:
   CreateItemFunctionArn:
     Description: ARN of the Create Lambda function
     Value: !GetAtt [ CreateItemFunction, Arn ]
+
+  ModifyItemFunctionArn:
+    Description: ARN of the Create Lambda function
+    Value: !GetAtt [ ModifyItemFunction, Arn ]
     
