@@ -2,9 +2,11 @@ import os
 import json
 import psycopg2
 from psycopg2 import Error, sql
-from dotenv import load_dotenv
+import logging
 
-load_dotenv()
+logger = logging.getLogger()
+logger.setLevel(logging.INFO)
+
 
 
 def connect():
@@ -17,36 +19,48 @@ def connect():
     
     return connection
 
-def handle_removeItems():
+def handle_removeItems(item_id):
+    logger.info("Connecting to the database")
     conn = connect()
+    logger.info("Connection Established")
     table_name_insert = 'items_table'
     set_column_insert = "isactive"
     where_column_insert = "item_id"
     newSet_value = "false"
-    where_value = 2
 
     queryStr = sql.SQL("UPDATE {table_name} SET {set_column} = %s WHERE {where_column} = %s RETURNING item_id, name, isactive").format(table_name=sql.Identifier(table_name_insert), set_column=sql.Identifier(set_column_insert), where_column=sql.Identifier(where_column_insert))
-    testQ = (newSet_value, where_value)
 
     try:
         cursor = conn.cursor()
-        cursor.execute(queryStr, testQ)
-        cursor.execute("SELECT item_id, name, isactive FROM items_table" )
+        cursor.execute(queryStr, (newSet_value, item_id))
         results = cursor.fetchall()
-        print(results)
+        logger.info(f"Deleted item: {results}")
+
+        return{
+             'statusCode': 200,
+             'body': json.dumps({'Deleted item': str(results)})
+        }
+
 
     except (Exception, Error) as error:
-        print("Error while connecting to PostgreSQL", error)
+        logger.info("Error while connecting to database", error)
+        return{
+             'statusCode': 500,
+             'body': json.dumps({'error': str(error)})
+        }
     
     finally:
         cursor.close()
         conn.close()
-        print("PostgreSQ: connection is closed")
+        logger.info("Connection is closed")
     
 def lambda_handler(event, context):
-    method = event['httpMethod']
-    path = event['path']
-    
-    if method == 'DELETE' and path == '/items/remove:6':
-        return handle_removeItems()    
+    #Ensure on AWS that the API-Gateway method is set to Delete
+    item_id = event['pathParameters'].get('id')
+    if not item_id:
+            return{
+                 'statusCode': 400,
+                 'body': json.dumps({'error': 'Missing item ID in path'})
+            }
+    return handle_removeItems(item_id)    
 
