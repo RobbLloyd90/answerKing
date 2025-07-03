@@ -232,7 +232,7 @@ Resources:
         AnswerKing:
           Type: Api
           Properties:
-            Path: /removeitem/{id}
+            Path: /item/{id}
             Method: DELETE
     Metadata:
       SamResourceId: RemoveItemFunction

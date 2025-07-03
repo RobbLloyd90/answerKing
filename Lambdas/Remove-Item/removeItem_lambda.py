@@ -33,13 +33,12 @@ def handle_removeItems(item_id):
     try:
         cursor = conn.cursor()
         cursor.execute(queryStr, (newSet_value, item_id))
-        cursor.execute("SELECT item_id, name, isactive FROM items_table" )
         results = cursor.fetchall()
-        logger.info(f"Deleted item {item_id}: Currently Available items: {results}")
+        logger.info(f"Deleted item: {results}")
 
         return{
              'statusCode': 200,
-             'body': json.dumps({'Deleted item': str(item_id), 'Currently Available items': str(results)})
+             'body': json.dumps({'Deleted item': str(results)})
         }
 
 
