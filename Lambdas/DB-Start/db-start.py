@@ -208,12 +208,12 @@ def handle_dbInit():
         for item in json_data:
             name = item['name']
             price = item['price']
-            description =item['description']
+            description = item['description']
             kcals = item['kcals']
             carbs = item['carbs']
             sugar = item['sugar']
             fiber = item['fiber']
-            salt =item['salt']
+            salt = item['salt']
             isActive = item['isActive']
 
             cursor.execute("""INSERT INTO items_table(name, price, description, kcals, carbs, sugar, fiber, salt, isActive) VALUES(%s,%s,%s,%s,%s,%s,%s,%s,%s);""", (name, price, description, kcals, carbs, sugar, fiber, salt, isActive))

@@ -236,6 +236,35 @@ Resources:
             Method: DELETE
     Metadata:
       SamResourceId: RemoveItemFunction
+    
+  CreateItemFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: Lambdas/Create-Item
+      Handler: createItem_lambda.lambda_handler
+      Environment:
+        Variables:
+          DB_PASSWORD: !Ref DBPASSWORD 
+          DB_NAME: !Ref DBNAME
+          DB_USER: !Ref DBUSER
+          DB_HOST: !GetAtt AnswerKingDB.Endpoint.Address
+          DB_PORT: !Ref DBPORT
+      Runtime: python3.13
+      VpcConfig:
+        SecurityGroupIds: 
+          - !Ref LambdaSecurityGroup
+        SubnetIds: 
+          - !Ref Subnet1
+          - !Ref Subnet2
+      Events:
+        AnswerKing:
+          Type: Api
+          Properties:
+            Path: /item
+            Method: POST
+            
+    Metadata:
+      SamResourceId: CreateItemFunction
 
 Outputs:
   VPC:
@@ -263,6 +292,10 @@ Outputs:
     Value: !GetAtt [ ItemsFunction, Arn ]
 
   RemoveItemFunctionArn:
-    Description: ARN of the Items Lambda function
+    Description: ARN of the Remove Lambda function
     Value: !GetAtt [ RemoveItemFunction, Arn ]
+
+  CreateItemFunctionArn:
+    Description: ARN of the Create Lambda function
+    Value: !GetAtt [ CreateItemFunction, Arn ]
     
