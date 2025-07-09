@@ -9,7 +9,7 @@ logger.setLevel(logging.INFO)
 
 # SAMPLE DATA
 
-json_data = [
+item_json_data = [
   {
     "name": "Filter Coffee",
     "price": 2.95,
@@ -151,19 +151,67 @@ json_data = [
     "isActive": True
   }]
 
+category_json_data = [
+  {
+    "category": "Drink",
+    "isActive": True
+  },
+  {
+    "category": "Main",
+    "isActive": True
+  },  
+  {
+    "category": "Side",
+    "isActive": True
+  },
+
+  {
+    "category": "Dessert",
+    "isActive": True
+  },  
+  {
+    "category": "Vegan",
+    "isActive": True
+  }, 
+  {
+    "category": "Vegetarian",
+    "isActive": True
+  },
+    {
+    "category": "Nut-free",
+    "isActive": True
+  },
+    {
+    "category": "Gluten-free",
+    "isActive": True
+  },
+    {
+    "category": "Summer Specials",
+    "isActive": True
+  },
+    {
+    "category": "3 for 10 Quid",
+    "isActive": True
+  },
+    {
+    "category": "Specials",
+    "isActive": True
+  }
+]
 #Setting spl protected variables
 dropItemsTableQuery = "DROP TABLE IF EXISTS items_table;"
 dropStaffTableQuery = "DROP TABLE IF EXISTS staff_table;"
 dropOrderTableQuery = "DROP TABLE IF EXISTS order_table;"
 dropCustomerTableQuery = "DROP TABLE IF EXISTS customer_table;"
 dropCategoryTableQuery = "DROP TABLE IF EXISTS category_table"
+dropItemCategoryTableQuery = "DROP TABLE IF EXISTS items_category"
     
 createCustomerTableQuery = "CREATE TABLE customer_table(customer_id SERIAL PRIMARY KEY, first_name VARCHAR(100) NOT NULL, surname_name VARCHAR(200), location VARCHAR(500) NOT NULL, email_address VARCHAR(500) NOT NULL, wallet DOUBLE PRECISION NOT NULL)"
 createOrderTableQuery = "CREATE TABLE order_table(order_id SERIAL PRIMARY KEY, customer_id INT NOT NULL, item_id INT, date TIMESTAMP, paid_status BOOL NOT NULL, fulfilled_status BOOL NOT NULL, staff_id INT NOT NULL)"
 createStaffTableQuery = "CREATE TABLE staff_table(staff_id SERIAL PRIMARY KEY, first_name VARCHAR(100) NOT NULL, surname_name VARCHAR(200) NOT NULL, staff_number INT NOT NULL UNIQUE, store_location VARCHAR(200), email_address VARCHAR(500))"
 createItemTableQuery = "CREATE TABLE items_table(item_id SERIAL PRIMARY KEY, name VARCHAR(100) NOT NULL, price DOUBLE PRECISION NOT NULL, description TEXT, kcals DOUBLE PRECISION, fat DOUBLE PRECISION, carbs DOUBLE PRECISION, sugar DOUBLE PRECISION, fiber DOUBLE PRECISION, salt DOUBLE PRECISION, isActive BOOL)"
-createCategoryTableQuery = "CREATE TABLE category_table(category_id SERIAL PRIMARY KEY, name VARCHAR(100))"
-
+createCategoryTableQuery = "CREATE TABLE category_table(category_id SERIAL PRIMARY KEY, category VARCHAR(100), isActive BOOL)"
+createItemCategoryTableQuery = "CREATE TABLE items_category (item_id INT REFERENCES items_table(item_id) ON DELETE CASCADE, category_id INT REFERENCES category_table(category_id) ON DELETE CASCADE, PRIMARY KEY (item_id, category_id))"
 
 # Make db connection
 def handle_dbInit():
@@ -187,6 +235,7 @@ def handle_dbInit():
     #DROP EXISTING TABLES IF THEY EXISTS
 
         logger.info("Dropping existing tables if they exist")
+        cursor.execute(dropItemCategoryTableQuery)
         cursor.execute(dropOrderTableQuery)
         cursor.execute(dropStaffTableQuery)
         cursor.execute(dropCustomerTableQuery)
@@ -201,11 +250,12 @@ def handle_dbInit():
         cursor.execute(createCustomerTableQuery)
         cursor.execute(createItemTableQuery)
         cursor.execute(createCategoryTableQuery)
+        cursor.execute(createItemCategoryTableQuery)
         logger.info("Tables created")
 
     #INSERT TABLE DATA
         logger.info("Inserting data into items_tables")
-        for item in json_data:
+        for item in item_json_data:
             name = item['name']
             price = item['price']
             description = item['description']
@@ -217,6 +267,12 @@ def handle_dbInit():
             isActive = item['isActive']
 
             cursor.execute("""INSERT INTO items_table(name, price, description, kcals, carbs, sugar, fiber, salt, isActive) VALUES(%s,%s,%s,%s,%s,%s,%s,%s,%s);""", (name, price, description, kcals, carbs, sugar, fiber, salt, isActive))
+        
+        for category in category_json_data:
+            categoryName = category['category']
+            isActive = category['isActive']
+
+            cursor.execute("""INSERT INTO category_table(category, isActive) VALUES(%s, %s);""", (categoryName, isActive))
 
         connection.commit()
         logger.info("Data insertion complete.")

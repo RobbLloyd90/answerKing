@@ -205,7 +205,7 @@ Resources:
         AnswerKing:
           Type: Api
           Properties:
-            Path: /all-items
+            Path: /item
             Method: GET
     Metadata:
       SamResourceId: ItemsFunction
@@ -292,6 +292,91 @@ Resources:
             Method: POST    
     Metadata:
       SamResourceId: ModifyItemFunction
+
+  CategoriesFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: Lambdas/All-Categories
+      Handler: selectAllCategories_lambda.lambda_handler
+      Environment:
+        Variables:
+          DB_PASSWORD: !Ref DBPASSWORD 
+          DB_NAME: !Ref DBNAME
+          DB_USER: !Ref DBUSER
+          DB_HOST: !GetAtt AnswerKingDB.Endpoint.Address
+          DB_PORT: !Ref DBPORT
+      Runtime: python3.13
+      VpcConfig:
+        SecurityGroupIds: 
+          - !Ref LambdaSecurityGroup
+        SubnetIds: 
+          - !Ref Subnet1
+          - !Ref Subnet2
+      Events:
+        AnswerKing:
+          Type: Api
+          Properties:
+            Path: /category
+            Method: GET
+    Metadata:
+      SamResourceId: CategoryFunction
+
+  RemoveCategoryFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: Lambdas/Remove-Category
+      Handler: removeCategory_lambda.lambda_handler
+      Environment:
+        Variables:
+          DB_PASSWORD: !Ref DBPASSWORD 
+          DB_NAME: !Ref DBNAME
+          DB_USER: !Ref DBUSER
+          DB_HOST: !GetAtt AnswerKingDB.Endpoint.Address
+          DB_PORT: !Ref DBPORT
+      Runtime: python3.13
+      VpcConfig:
+        SecurityGroupIds: 
+          - !Ref LambdaSecurityGroup
+        SubnetIds: 
+          - !Ref Subnet1
+          - !Ref Subnet2
+      Events:
+        AnswerKing:
+          Type: Api
+          Properties:
+            Path: /category/{id}
+            Method: DELETE
+    Metadata:
+      SamResourceId: RemoveCategoryFunction
+    
+  CreateCategoryFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: Lambdas/Create-Category
+      Handler: createCategory_lambda.lambda_handler
+      Environment:
+        Variables:
+          DB_PASSWORD: !Ref DBPASSWORD 
+          DB_NAME: !Ref DBNAME
+          DB_USER: !Ref DBUSER
+          DB_HOST: !GetAtt AnswerKingDB.Endpoint.Address
+          DB_PORT: !Ref DBPORT
+      Runtime: python3.13
+      VpcConfig:
+        SecurityGroupIds: 
+          - !Ref LambdaSecurityGroup
+        SubnetIds: 
+          - !Ref Subnet1
+          - !Ref Subnet2
+      Events:
+        AnswerKing:
+          Type: Api
+          Properties:
+            Path: /category
+            Method: POST
+    Metadata:
+      SamResourceId: CreateCategoryFunction
+
 Outputs:
   VPC:
     Description: A reference to the created VPC
@@ -328,4 +413,16 @@ Outputs:
   ModifyItemFunctionArn:
     Description: ARN of the Create Lambda function
     Value: !GetAtt [ ModifyItemFunction, Arn ]
+
+  CategoriesFunctionArn:
+    Description: ARN of the Categories Lambda function
+    Value: !GetAtt [ CategoriesFunction, Arn ]
+
+  RemoveCategoryFunctionArn:
+    Description: ARN of the Remove Lambda function
+    Value: !GetAtt [ RemoveCategoryFunction, Arn ]
+
+  CreateCategoryFunctionArn:
+    Description: ARN of the Create Lambda function
+    Value: !GetAtt [ CreateCategoryFunction, Arn ]
     

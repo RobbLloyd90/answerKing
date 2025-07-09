@@ -18,8 +18,13 @@ ak-env/
 **/.aws-sam
 sam-installation
 aws-sam-cli-linux-x86_64.zip
+local-db-init.py
 
 ### TEMP FILES ###
 
 template.txt
 template-1-7-25.txt
+
+#JSON Data
+
+Jsons/

@@ -8,6 +8,7 @@
         "DBPASSWORD",
         "DBUSER",
         "dotenv",
+        "Jsons",
         "kcals",
         "Postgre",
         "psql",
