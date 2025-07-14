@@ -28,7 +28,7 @@ def handle_removeCategory(id):
     where_column_insert = "category_id"
     newSet_value = "false"
 
-    queryStr = sql.SQL("UPDATE {table_name} SET {set_column} = %s WHERE {where_column} = %s RETURNING category_id, category, isActive").format(table_name=sql.Identifier(table_name_insert), set_column=sql.Identifier(set_column_insert), where_column=sql.Identifier(where_column_insert))
+    queryStr = sql.SQL("UPDATE category_table SET isActive = %s WHERE category_id = %s RETURNING category_id, category")
 
     try:
         cursor = conn.cursor()
