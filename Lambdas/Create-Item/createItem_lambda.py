@@ -20,7 +20,7 @@ def connect():
     return connection
 
 def queryFormat(body):
-    itemToAdd = copy.deepcopy(body)
+    itemToAdd = body
     name = itemToAdd['name']
     price = itemToAdd['price']
     description = itemToAdd['description']
@@ -45,8 +45,6 @@ def handle_createItem(queryData):
         queryStr = """INSERT INTO items_table(name, price, description, kcals, carbs, sugar, fiber, salt, isActive) VALUES(%s,%s,%s,%s,%s,%s,%s,%s,%s) RETURNING *;"""
         cursor.execute(queryStr, queryData)
         results = cursor.fetchall()
-        cursor.close()
-        conn.commit()
 
 
     except (Exception, Error) as error:
@@ -57,6 +55,8 @@ def handle_createItem(queryData):
         }
     
     finally:
+        cursor.close()
+        conn.commit()
         conn.close()
         logger.info("Connection is closed")
         return{

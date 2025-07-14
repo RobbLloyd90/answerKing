@@ -6,9 +6,8 @@ import logging
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
     
-def handle_getAllItems():
-    logger.info("establishing connection")
-
+def connectDB():
+    
     connection = psycopg2.connect(
         database=os.getenv("DB_NAME"),
         user=os.getenv("DB_USER"),
@@ -16,6 +15,12 @@ def handle_getAllItems():
         password=os.getenv("DB_PASSWORD"),
         port=os.getenv("DB_PORT"))
     
+    return connection
+    
+
+def handle_getAllItems():
+    logger.info("establishing connection")
+    connection = connectDB()    
     logger.info("Connection established")
     
     try:

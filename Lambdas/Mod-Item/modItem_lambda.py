@@ -14,32 +14,29 @@ def connect():
         user=os.getenv("DB_USER"),
         host=os.getenv("DB_HOST"),
         password=os.getenv("DB_PASSWORD"),
-        port=os.getenv("DB_PORT"))
-    
+        port=os.getenv("DB_PORT"))    
     return connection
 
-def handle_modifyItem(item_id, body):
+def handle_setQueryData(body, item_id):
+    for key, value in body.items():
+    # Set the first key name to be the column to update
+        set_column_insert = key
+    # Set the first key value new value
+        newSet_value = value
+
+    queryStr = sql.SQL("UPDATE item_table SET {set_column} = %s WHERE item_id = %s RETURNING *").format(set_column=sql.Identifier(set_column_insert))
+    query = (queryStr, (newSet_value, item_id))
+    return query
+
+def handle_modifyItem(query):
     logger.info("Connecting to the database")
     conn = connect()
     logger.info("Connection Established")
 
-    table_name_insert = 'items_table'
-    item_id = 'item_id'
-    itemToAdd = copy.deepcopy(body)
- 
-    # Sets all key names from the body
-    key = [key for key, val in itemToAdd.items()]
-    # Set the first key name to be the column to update
-    set_column_insert = key[0]
-    # Set the first key value new value
-    newSet_value = itemToAdd[key[0]]
-
-
-    queryStr = sql.SQL("UPDATE {table_name} SET {set_column} = %s WHERE {where_column} = %s RETURNING *").format(table_name=sql.Identifier(table_name_insert), set_column=sql.Identifier(set_column_insert), where_column=sql.Identifier(item_id))
     try:
         cursor = conn.cursor()
-        logger.info(f"QueryStr Check: {queryStr, (newSet_value, item_id)}")
-        cursor.execute(queryStr, (newSet_value, item_id))
+        logger.info(f"QueryStr Check: {query}")
+        cursor.execute(query)
         results = cursor.fetchall()
         cursor.close()
 
@@ -60,15 +57,13 @@ def handle_modifyItem(item_id, body):
     
 def lambda_handler(event, context):
     item_id = event['pathParameters'].get('id')
-
     #Check if there is an id in the parameters, if not return 400
-
     if not item_id:
             return{
                  'statusCode': 400,
                  'body': json.dumps({'error': 'Missing item ID in path'})
             }
     body = json.loads(event['body'])
-
-    return handle_modifyItem(item_id, body)    
+    query = handle_setQueryData(body, item_id)
+    return handle_modifyItem(query)    
 

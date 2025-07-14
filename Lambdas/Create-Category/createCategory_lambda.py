@@ -20,7 +20,7 @@ def connect():
     return connection
 
 def queryFormat(body):
-    CategoryToAdd = copy.deepcopy(body)
+    CategoryToAdd = body
     category = CategoryToAdd['category']
     isActive = CategoryToAdd['isActive']
 
@@ -38,8 +38,6 @@ def handle_createCategory(queryData):
         queryStr = """INSERT INTO category_table(category, isActive) VALUES(%s,%s) RETURNING *;"""
         cursor.execute(queryStr, queryData)
         results = cursor.fetchall()
-        cursor.close()
-        conn.commit()
 
 
     except (Exception, Error) as error:
@@ -50,6 +48,8 @@ def handle_createCategory(queryData):
         }
     
     finally:
+        cursor.close()
+        conn.commit()
         conn.close()
         logger.info("Connection is closed")
         return{
