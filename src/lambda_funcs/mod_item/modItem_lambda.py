@@ -19,13 +19,13 @@ def connect():
 
 #Sorts and sets the PSQL Query
 def handle_setQueryData(body, item_id):
-    set_column_insert = None
-    newSet_value = None
-    for key, value in body.items():
-        set_column_insert = key
-        newSet_value = value
-    queryStr = sql.SQL("UPDATE items_table SET name = %s WHERE item_id = %s RETURNING *").as_string(connect())
-    return queryStr, newSet_value
+    fieldName = None
+    value = None
+    for key, val in body.items():
+        fieldName = key
+        value = val
+    queryStr = sql.SQL("UPDATE items_table SET {field} = %s WHERE item_id = %s RETURNING *").format(field=sql.Identifier(fieldName)).as_string(connect())
+    return queryStr, value
 
 #Takes a PSQL String and parameters with Id and modify the items table
 def handle_modifyItem(query, param, item_id):
