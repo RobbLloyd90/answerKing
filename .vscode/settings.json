@@ -8,11 +8,13 @@
         "DBPASSWORD",
         "DBUSER",
         "dotenv",
+        "funcs",
         "Jsons",
         "kcals",
         "Postgre",
         "psql",
         "psycopg",
-        "Robb"
+        "Robb",
+        "zstiyqlhf"
     ]
 }

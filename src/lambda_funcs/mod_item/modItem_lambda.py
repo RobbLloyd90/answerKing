@@ -7,40 +7,33 @@ import logging
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
-
-
+#Connects to the database
 def connect():
     connection = psycopg2.connect(
         database=os.getenv("DB_NAME"),
         user=os.getenv("DB_USER"),
         host=os.getenv("DB_HOST"),
         password=os.getenv("DB_PASSWORD"),
-        port=os.getenv("DB_PORT"))
-    
+        port=os.getenv("DB_PORT"))    
     return connection
 
-def handle_removeItems(item_id):
-    logger.info("Connecting to the database")
+#Sorts and sets the PSQL Query
+def handle_setQueryData(body, item_id):
+    set_column_insert = None
+    newSet_value = None
+    for key, value in body.items():
+        set_column_insert = key
+        newSet_value = value
+    queryStr = sql.SQL("UPDATE items_table SET name = %s WHERE item_id = %s RETURNING *").as_string(connect())
+    return queryStr, newSet_value
+
+#Takes a PSQL String and parameters with Id and modify the items table
+def handle_modifyItem(query, param, item_id):
     conn = connect()
-    logger.info("Connection Established")
-    table_name_insert = 'items_table'
-    set_column_insert = "isactive"
-    where_column_insert = "item_id"
-    newSet_value = "false"
-
-    queryStr = sql.SQL("UPDATE {table_name} SET {set_column} = %s WHERE {where_column} = %s RETURNING item_id, name, isactive").format(table_name=sql.Identifier(table_name_insert), set_column=sql.Identifier(set_column_insert), where_column=sql.Identifier(where_column_insert))
-
     try:
         cursor = conn.cursor()
-        cursor.execute(queryStr, (newSet_value, item_id))
+        cursor.execute(query, (param, item_id))
         results = cursor.fetchall()
-        logger.info(f"Deleted item: {results}")
-
-        return{
-             'statusCode': 200,
-             'body': json.dumps({'Deleted item': str(results)})
-        }
-
 
     except (Exception, Error) as error:
         logger.info("Error while connecting to database", error)
@@ -51,16 +44,25 @@ def handle_removeItems(item_id):
     
     finally:
         cursor.close()
+        conn.commit()
         conn.close()
         logger.info("Connection is closed")
+        return{
+             'statusCode': 200,
+             'body': json.dumps({'Modified item': str(results)})
+        }
     
 def lambda_handler(event, context):
-    #Ensure on AWS that the API-Gateway method is set to Delete
     item_id = event['pathParameters'].get('id')
+
+    #Check if there is an id in the parameters, if not return 400
     if not item_id:
             return{
                  'statusCode': 400,
                  'body': json.dumps({'error': 'Missing item ID in path'})
             }
-    return handle_removeItems(item_id)    
+    
+    body = json.loads(event['body'])
+    query, param = handle_setQueryData(body, item_id)
+    return handle_modifyItem(query, param, item_id)    
 
