@@ -144,7 +144,7 @@ Resources:
   HomeFunction:
     Type: AWS::Serverless::Function
     Properties:
-      CodeUri: Lambdas/Home
+      CodeUri: src/lambda_funcs/home
       Handler: home.lambda_handler
       Runtime: python3.13
       Events:
@@ -158,8 +158,8 @@ Resources:
   StartDBFunction:
     Type: AWS::Serverless::Function
     Properties:
-      CodeUri: Lambdas/DB-Start
-      Handler: db-start.lambda_handler
+      CodeUri: src/lambda_funcs/db_start
+      Handler: db_start.lambda_handler
       Environment:
         Variables:
           DB_PASSWORD: !Ref DBPASSWORD 
@@ -178,14 +178,14 @@ Resources:
         AnswerKing:
           Type: Api
           Properties:
-            Path: /pleaseonlydothisonce
+            Path: /init_start
             Method: POST
     Metadata:
       SamResourceId: StartDBFunction
   ItemsFunction:
     Type: AWS::Serverless::Function
     Properties:
-      CodeUri: Lambdas/All-Items
+      CodeUri: src/lambda_funcs/all_items
       Handler: selectAllItems_lambda.lambda_handler
       Environment:
         Variables:
@@ -212,7 +212,7 @@ Resources:
   RemoveItemFunction:
     Type: AWS::Serverless::Function
     Properties:
-      CodeUri: Lambdas/Remove-Item
+      CodeUri: src/lambda_funcs/remove_item
       Handler: removeItem_lambda.lambda_handler
       Environment:
         Variables:
@@ -240,7 +240,7 @@ Resources:
   CreateItemFunction:
     Type: AWS::Serverless::Function
     Properties:
-      CodeUri: Lambdas/Create-Item
+      CodeUri: src/lambda_funcs/create_item
       Handler: createItem_lambda.lambda_handler
       Environment:
         Variables:
@@ -268,7 +268,7 @@ Resources:
   ModifyItemFunction:
     Type: AWS::Serverless::Function
     Properties:
-      CodeUri: Lambdas/Mod-Item
+      CodeUri: src/lambda_funcs/mod_item
       Handler: modItem_lambda.lambda_handler
       Environment:
         Variables:
@@ -289,14 +289,14 @@ Resources:
           Type: Api
           Properties:
             Path: /item/{id}
-            Method: POST    
+            Method: PUT
     Metadata:
       SamResourceId: ModifyItemFunction
 
   CategoriesFunction:
     Type: AWS::Serverless::Function
     Properties:
-      CodeUri: Lambdas/All-Categories
+      CodeUri: src/lambda_funcs/all_categories
       Handler: selectAllCategories_lambda.lambda_handler
       Environment:
         Variables:
@@ -324,7 +324,7 @@ Resources:
   RemoveCategoryFunction:
     Type: AWS::Serverless::Function
     Properties:
-      CodeUri: Lambdas/Remove-Category
+      CodeUri: src/lambda_funcs/remove_category
       Handler: removeCategory_lambda.lambda_handler
       Environment:
         Variables:
@@ -352,7 +352,7 @@ Resources:
   CreateCategoryFunction:
     Type: AWS::Serverless::Function
     Properties:
-      CodeUri: Lambdas/Create-Category
+      CodeUri: src/lambda_funcs/create_category
       Handler: createCategory_lambda.lambda_handler
       Environment:
         Variables:

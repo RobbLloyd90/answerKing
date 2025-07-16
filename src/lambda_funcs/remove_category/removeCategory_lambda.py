@@ -19,26 +19,23 @@ def connect():
     
     return connection
 
-def handle_removeItems(item_id):
-    logger.info("Connecting to the database")
+def handle_removeCategory(id):
     conn = connect()
-    logger.info("Connection Established")
-    table_name_insert = 'items_table'
-    set_column_insert = "isactive"
-    where_column_insert = "item_id"
     newSet_value = "false"
 
-    queryStr = sql.SQL("UPDATE {table_name} SET {set_column} = %s WHERE {where_column} = %s RETURNING item_id, name, isactive").format(table_name=sql.Identifier(table_name_insert), set_column=sql.Identifier(set_column_insert), where_column=sql.Identifier(where_column_insert))
+    queryStr = sql.SQL("UPDATE category_table SET isActive = %s WHERE category_id = %s RETURNING category_id, category")
 
     try:
         cursor = conn.cursor()
-        cursor.execute(queryStr, (newSet_value, item_id))
+        logger.info(f"{queryStr,(newSet_value, id)}")
+        cursor.execute(queryStr, (newSet_value, id))
+
         results = cursor.fetchall()
-        logger.info(f"Deleted item: {results}")
+        logger.info(f"Deleted Category: {results}")
 
         return{
              'statusCode': 200,
-             'body': json.dumps({'Deleted item': str(results)})
+             'body': json.dumps({'Deleted Category': str(results)})
         }
 
 
@@ -56,11 +53,11 @@ def handle_removeItems(item_id):
     
 def lambda_handler(event, context):
     #Ensure on AWS that the API-Gateway method is set to Delete
-    item_id = event['pathParameters'].get('id')
-    if not item_id:
+    id = event['pathParameters'].get('id')
+    if not id:
             return{
                  'statusCode': 400,
-                 'body': json.dumps({'error': 'Missing item ID in path'})
+                 'body': json.dumps({'error': 'Missing Category ID in path'})
             }
-    return handle_removeItems(item_id)    
+    return handle_removeCategory(id)    
 
