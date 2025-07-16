@@ -20,9 +20,7 @@ def connect():
     return connection
 
 def handle_removeCategory(id):
-    logger.info("Connecting to the database")
     conn = connect()
-    logger.info("Connection Established")
     newSet_value = "false"
 
     queryStr = sql.SQL("UPDATE category_table SET isActive = %s WHERE category_id = %s RETURNING category_id, category")
